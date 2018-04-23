@@ -5,7 +5,7 @@ import tensorflow as tf
 import numpy as np
 import time
 from codecs import open
-
+import os
 from Discriminator import Discriminator
 
 
@@ -22,7 +22,8 @@ opts.parseArgs()
 from dataHelper import InsuranceQA        
 dataset=InsuranceQA(opts) 
 
-
+if not os.path.exists("log"):
+    os.mkdir("log")
 
 
 def main():
