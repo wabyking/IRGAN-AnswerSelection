@@ -182,7 +182,7 @@ class InsuranceQA(object):
 
 
 
-
+    @log_time_delta
     def evaluate(self,sess,model,dataset="dev"):
         current_step = tf.train.global_step(sess, model.global_step)
         precision_current=self.dev_step(sess,model,dataset)

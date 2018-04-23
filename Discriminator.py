@@ -45,7 +45,8 @@ class Discriminator(QACNN):
                 feed_dict)
         
         time_str = datetime.datetime.now().isoformat()
-        print(("%s: DIS step %d, loss %f with acc %f "%(time_str, step, current_loss,accuracy)))
+        if verbose:
+            print(("%s: DIS step %d, loss %f with acc %f "%(time_str, step, current_loss,accuracy)))
         
         
 

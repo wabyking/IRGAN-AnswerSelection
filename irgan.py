@@ -12,75 +12,13 @@ import copy
 
 import Discriminator
 import Generator
-from insurance_qa_data_helpers import encode_sent
-import insurance_qa_data_helpers
-# import dataHelper
-# Model Hyperparameters
-tf.flags.DEFINE_integer("max_sequence_length", 200, "Max sequence length fo sentence (default: 200)")
-tf.flags.DEFINE_integer("embedding_dim", 100, "Dimensionality of character embedding (default: 128)")
-tf.flags.DEFINE_string("filter_sizes", "1,2,3,5", "Comma-separated filter sizes (default: '3,4,5')")
-tf.flags.DEFINE_integer("num_filters", 500, "Number of filters per filter size (default: 128)")
-tf.flags.DEFINE_float("dropout_keep_prob", 1.0, "Dropout keep probability (default: 0.5)")
-tf.flags.DEFINE_float("l2_reg_lambda", 0, "L2 regularizaion lambda (default: 0.0)")
-tf.flags.DEFINE_float("learning_rate", 0.05, "learning_rate (default: 0.1)")
-
-# Training parameters
-tf.flags.DEFINE_integer("batch_size", 100, "Batch Size (default: 64)")
-tf.flags.DEFINE_integer("num_epochs", 500000, "Number of training epochs (default: 200)")
-tf.flags.DEFINE_integer("evaluate_every", 10, "Evaluate model on dev set after this many steps (default: 100)")
-tf.flags.DEFINE_integer("checkpoint_every", 10, "Save model after this many steps (default: 100)")
-tf.flags.DEFINE_integer("pools_size", 100, "The sampled set of a positive ample, which is bigger than 500")
-tf.flags.DEFINE_integer("gen_pools_size", 20, "The sampled set of a positive ample, which is bigger than 500")
-tf.flags.DEFINE_integer("g_epochs_num", 1, " the num_epochs of generator per epoch")
-tf.flags.DEFINE_integer("d_epochs_num", 1, " the num_epochs of discriminator per epoch")
-tf.flags.DEFINE_integer("sampled_size", 100, " the real selectd set from the The sampled pools")
-tf.flags.DEFINE_integer("sampled_temperature", 20, " the temperature of sampling")
-tf.flags.DEFINE_integer("gan_k", 5, "he number of samples of gan")
-# Misc Parameters
-tf.flags.DEFINE_boolean("allow_soft_placement", True, "Allow device soft device placement")
-tf.flags.DEFINE_boolean("log_device_placement", False, "Log placement of ops on devices")
-
-FLAGS = tf.flags.FLAGS
-FLAGS._parse_flags()
-# print(("\nParameters:"))
-# for attr, value in sorted(FLAGS.__flags.items()):
-#		 print(("{}={}".format(attr.upper(), value)))
-# print((""))
-
-timeStamp = time.strftime("%Y%m%d%H%M%S", time.localtime(int(time.time())))
 
 
-print(("Loading data..."))
 
 
-vocab = insurance_qa_data_helpers.build_vocab()
-# embeddings =insurance_qa_data_helpers.load_vectors(vocab)
-alist = insurance_qa_data_helpers.read_alist()
-raw = insurance_qa_data_helpers.read_raw()
 
 
-test1List = insurance_qa_data_helpers.loadTestSet("test1")
-test2List= insurance_qa_data_helpers.loadTestSet("test2")
-devList= insurance_qa_data_helpers.loadTestSet("dev")
-testSet=[("test1",test1List),("test2",test2List),("dev",devList)]
 
-
-print("Load done...")
-log_precision = 'log/test1.gan_precision'+timeStamp
-loss_precision = 'log/test1.gan_loss'+timeStamp
-
-from functools import wraps
-#print( tf.__version__)
-def log_time_delta(func):
-	@wraps(func)
-	def _deco(*args, **kwargs):
-		start = time.time()
-		ret = func(*args, **kwargs)
-		end = time.time()
-		delta = end - start
-		print( "%s runed %.2f seconds"% (func.__name__,delta))
-		return ret
-	return _deco
 
 
 
@@ -115,56 +53,6 @@ def generate_gan(sess, model,loss_type="pair",negative_size=3):
 	return samples
 
 
-@log_time_delta	 
-def dev_step(sess,cnn,testList,dev_size=100):
-	scoreList = []
-	if dev_size>len(testList)/500:
-		dev_size=len(testList)/500
-		print( "have test %d samples" % dev_size)
-	for i in range(dev_size):
-		batch_scores=[]
-		for j in range(int(500/FLAGS.batch_size)):
-			x_test_1, x_test_2, x_test_3 = insurance_qa_data_helpers.load_val_batch(testList, vocab, i*500+j*FLAGS.batch_size, FLAGS.batch_size)
-			feed_dict = {
-				cnn.input_x_1: x_test_1,
-				cnn.input_x_2: x_test_2,	#x_test_2 equals x_test_3 for the test case
-				cnn.input_x_3: x_test_3
-			}
-			predicted =sess.run(cnn.score12, feed_dict)	 
-			batch_scores.extend(predicted)
-
-		max_indexs=[]	
-
-		max_score=max(batch_scores)
-		for index,s in enumerate(batch_scores):
-			if s==max_score:
-				max_indexs.append(index)
-		if len(max_indexs)==0:
-			scoreList.append(0)
-			continue
-		index=	random.choice(max_indexs)
-		if int(testList[i*500+index].split()[0])==1:
-			scoreList.append(1)
-		else:
-			scoreList.append(0)
-	return sum(scoreList) *1.0 /len(scoreList)
-
-
-
-@log_time_delta	 
-def evaluation(sess,model,log,num_epochs=0):
-	current_step = tf.train.global_step(sess, model.global_step)
-	if isinstance(model,  Discriminator.Discriminator):
-		model_type="Dis"
-	else:
-		model_type="Gen"
-
-	precision_current=dev_step(sess,model,test1List,1800)
-	line="test1: %d epoch: precision %f"%(current_step,precision_current)
-	print (line)
-	print( model.save_model(sess,precision_current))
-	log.write(line+"\n")
-	log.flush()
 
 
 	

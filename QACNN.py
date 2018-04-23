@@ -2,9 +2,9 @@
 import tensorflow as tf 
 import numpy as np 
 try:
-    import  pickle
-except:
     import cPickle as pickle
+except ImportError:
+    import pickle
 import time
 class QACNN():
     
