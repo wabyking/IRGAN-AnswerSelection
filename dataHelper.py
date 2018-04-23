@@ -107,7 +107,7 @@ class InsuranceQA(object):
     def loadData(self):
         answers = pd.read_csv("data/raw_answers.txt",sep="\t",names=["answer"])["answer"]  
         validate = pd.read_csv("data/validate.txt",sep="\t",names=["split","question","good","bad"]) 
-        train = pd.read_csv("data/train.txt",sep="\t",names=["question","answer"])
+        train = pd.read_csv("data/train.txt",sep="\t",names=["question","answer","answer_index"])
         dev =   validate[validate.split ==0 ] [["question","good","bad"]]
         test1 =   validate[validate.split ==1 ] [["question","good","bad"]] 
         test2 =   validate[validate.split ==2 ] [["question","good","bad"]] 
@@ -136,16 +136,47 @@ class InsuranceQA(object):
             
             subsamples=[]
             for neg in pools:
-                subsamples.append([self.encode(item) for item in [q,a,neg]])
+                subsamples.append([self.encode(item) for item in [q,neg]])
    
             predicteds=[]
             for batch in BucketIterator(subsamples,batch_size=self.opt.batch_size):                            
-                feed_dict = {model.input_x_1: batch[:,0],model.input_x_2: batch[:,1],model.input_x_3: batch[:,2]}         
-                predicted=sess.run(model.score13,feed_dict)
+                predicted=model.predict(batch,sess)
                 predicteds.extend(predicted)        
             index=np.argmax(predicteds)
             samples.append([self.encode(item) for item in [q,a,pools[index]]])
         return BucketIterator(samples,batch_size=self.opt.batch_size)
+    
+    @log_time_delta
+    def generate_gan(self,sess, model,loss_type="pair",negative_size=3,sampled_temperature=20):
+        samples=[]
+        for i,row in self.train.iterrows():
+            q=row["question"]
+            a=row["answer"]
+            if i %100==0:
+                print( "have sampled %d pairs" % i) 
+            neg_alist_index=[i for i in range(len(self.answers))] 
+            neg_alist_index.remove(int(row["answer_index"]))                 #remove the positive index
+            sampled_index=np.random.choice(neg_alist_index,size=[self.opt.pools_size],replace= False)
+        		pools=np.array(answers)[sampled_index]
+            subsamples=[]
+            for neg in pools:
+                subsamples.append([self.encode(item) for item in [q,neg]])
+   
+            predicteds=[]
+            for batch in BucketIterator(subsamples,batch_size=self.opt.batch_size):                            
+                predicted=model.predict(batch,sess)
+                predicteds.extend(predicted)        
+            exp_rating = np.exp(np.array(predicteds)*sampled_temperature)
+        		prob = exp_rating / np.sum(exp_rating)
+            neg_samples = np.random.choice(pools, size= negative_size,p=prob,replace=False) 
+            for neg in neg_samples:
+                samples.ppend([encode_sent(vocab,item, FLAGS.max_sequence_length) for item in [q,a,neg]])
+            
+            samples.append([self.encode(item) for item in [q,a,pools[index]]])
+        return samples
+            
+        
+
 
     def encode(self,sentence):    
         tokens = sentence.split()

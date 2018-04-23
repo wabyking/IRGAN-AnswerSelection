@@ -1,56 +1,42 @@
 #coding=utf-8
 #! /usr/bin/env python3.4
-import numpy as np
-import os
-import time
-import datetime
-import operator
-import random
+#coding=utf-8
+#! /usr/bin/env python3.4
+
 import tensorflow as tf
-import pickle
-import copy
-
-import Discriminator
-import Generator
-
-
+import numpy as np
+import time
+from codecs import open
+import os
+from Discriminator import Discriminator
 
 
+timeStamp = time.strftime("%Y%m%d%H%M%S", time.localtime(int(time.time()) ))
 
-
-
+precision = 'log/test1.dns'+timeStamp +".log"
 
 
 
-def generate_gan(sess, model,loss_type="pair",negative_size=3):
-	samples=[]
-	for _index ,pair in enumerate (raw):
-		if _index %100==0:
-			print( "have sampled %d pairs" % _index)
-		q=pair[2]
-		a=pair[3]
+from config import Params
+opts= Params()
+opts.parseArgs() 
+
+if not os.path.exists("log"):
+    os.mkdir("log")
+if not os.path.exists("model"):
+    os.mkdir("model")
+    
+from dataHelper import InsuranceQA        
+dataset=InsuranceQA(opts) 
 
 
-		neg_alist_index=[i for i in range(len(alist))] 
-		neg_alist_index.remove(_index)                 #remove the positive index
-		sampled_index=np.random.choice(neg_alist_index,size=[FLAGS.pools_size],replace= False)
-		pools=np.array(alist)[sampled_index]
 
-		canditates=insurance_qa_data_helpers.loadCandidateSamples(q,a,pools,vocab)	
-		predicteds=[]
-		for batch in insurance_qa_data_helpers.batch_iter(canditates,batch_size=FLAGS.batch_size):							
-			feed_dict = {model.input_x_1: batch[:,0],model.input_x_2: batch[:,1],model.input_x_3: batch[:,2]}			
-			predicted=sess.run(model.gan_score,feed_dict)
-			predicteds.extend(predicted)
 
-		# index=np.argmax(predicteds)
-		# samples.append([encode_sent(vocab,item, FLAGS.max_sequence_length) for item in [q,a,pools[index]]])
-		exp_rating = np.exp(np.array(predicteds)*FLAGS.sampled_temperature*1.5)
-		prob = exp_rating / np.sum(exp_rating)
-		neg_samples = np.random.choice(pools, size= negative_size,p=prob,replace=False) 
-		for neg in neg_samples:
-			samples.append([encode_sent(vocab,item, FLAGS.max_sequence_length) for item in [q,a,neg]])
-	return samples
+
+
+
+
+
 
 
 
