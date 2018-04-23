@@ -11,7 +11,7 @@ from Discriminator import Discriminator
 
 timeStamp = time.strftime("%Y%m%d%H%M%S", time.localtime(int(time.time()) ))
 
-precision = 'log/test1.dns'+timeStamp
+precision = 'log/test1.dns'+timeStamp +".log"
 
 
 
