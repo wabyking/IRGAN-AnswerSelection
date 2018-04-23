@@ -1,7 +1,10 @@
 #coding=utf-8
 import tensorflow as tf 
 import numpy as np 
-import  pickle
+try:
+    import  pickle
+except:
+    import cPickle as pickle
 import time
 class QACNN():
     

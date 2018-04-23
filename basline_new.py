@@ -3,11 +3,9 @@
 
 import tensorflow as tf
 import numpy as np
-import os
 import time
-import datetime
-import pickle
-import math
+from codecs import open
+
 from Discriminator import Discriminator
 
 
@@ -45,7 +43,9 @@ def main():
                                 
                             model.train_step(batch,sess,model)
                             percision,step = dataset.evaluate(sess,model)
-                            print("%d percision @1 : %.4f"%(step,percision))
+                            line = "%d percision @1 : %.4f"%(step,percision)
+                            print(line)
+                            log.write(line+"\n")
                     
 if __name__ == '__main__':
     main()
