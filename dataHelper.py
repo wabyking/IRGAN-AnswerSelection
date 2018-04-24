@@ -227,7 +227,6 @@ class InsuranceQA(object):
     def evaluate(self,sess,model,dataset="dev"):
         current_step = tf.train.global_step(sess, model.global_step)
         precision_current=self.dev_step(sess,model,dataset)
-
         print( model.save_model(sess,precision_current))
         return precision_current,current_step
         

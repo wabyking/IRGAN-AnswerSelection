@@ -21,10 +21,22 @@ class Generator(QACNN):
         grads_and_vars = optimizer.compute_gradients(self.gan_loss)
         self.gan_updates = optimizer.apply_gradients(grads_and_vars, global_step=self.global_step)
 
-        # minize attention
-        self.gan_score=self.score13-self.score12
-        self.dns_score=self.score13
-      
+
+    def feedback(self,batch,sess,neg_index,rewards,verbose=True):
+
+
+        feed_dict = {
+                    self.input_x_1: batch[:,0],
+                    self.input_x_2: batch[:,1],
+                    self.neg_index: neg_index,
+                    self.input_x_3: batch[:,2],
+                    self.reward: rewards
+                }
+        _, step,    current_loss,positive,negative = sess.run(                                                                                    #应该是全集上的softmax    但是此处做全集的softmax开销太大了
+            [self.gan_updates, self.global_step, self.gan_loss, self.positive,self.negative],         #     self.prob= tf.nn.softmax( self.cos_13)
+            feed_dict)  
+        return current_loss,step,positive,negative
+  
 
 
 

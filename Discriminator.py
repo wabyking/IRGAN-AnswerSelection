@@ -2,7 +2,7 @@
 import tensorflow as tf 
 import numpy as np 
 import datetime
-
+import random
 from QACNN import QACNN           
 class Discriminator(QACNN):
   
@@ -24,6 +24,8 @@ class Discriminator(QACNN):
 
             self.correct = tf.equal(0.0, self.losses)
             self.accuracy = tf.reduce_mean(tf.cast(self.correct, "float"), name="accuracy")
+            
+
 
 
         self.global_step = tf.Variable(0, name="global_step", trainable=False)
@@ -46,7 +48,18 @@ class Discriminator(QACNN):
         
         time_str = datetime.datetime.now().isoformat()
         if verbose:
-            print(("%s: DIS step %d, loss %f with acc %f "%(time_str, step, current_loss,accuracy)))
+            if random.randint(0,10) <1:
+                print(("%s: DIS step %d, loss %f with acc %f "%(time_str, step, current_loss,accuracy)))
+    
+    def reward(self,batch,sess,verbose=True):
+        feed_dict = {
+                self.input_x_1: batch[:,0],
+                self.input_x_2: batch[:,1],
+                self.input_x_3: batch[:,2],
+                self.dropout_keep_prob_holder:1.0
+                }
+        scores = sess.run( self.reward, feed_dict)
+        return scores
         
         
 

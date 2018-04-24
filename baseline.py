@@ -46,10 +46,11 @@ def main():
                     for j in range(1):
                         for batch in samples:    # try:
                             model.train_step(batch,sess)
-                    percision,step = dataset.evaluate(sess,model)
-                    line = "%d percision @1 : %.4f"%(step,percision)
-                    print(line)
-                    log.write(line+"\n")
+                    if(i%10==0):
+                        percision,step = dataset.evaluate(sess,model)
+                        line = "%d percision @1 : %.4f"%(step,percision)
+                        print(line)
+                        log.write(line+"\n")
                     
 if __name__ == '__main__':
     main()

@@ -8,7 +8,7 @@ class Params(object):
     def __init__(self, embedding_dim = 100, max_sequence_length = 200, filter_sizes ='1,2,3,5', num_filters = 500,
                  dropout_keep_prob = 1.0, l2_reg_lambda = 0.0000001,learning_rate = 0.1, batch_size = 128,
                  num_epochs = 500000, evaluate_every = 500, pools_size= 100,checkpoint_every=500,
-                 sampled_size=100):
+                 sampled_size=100,g_epochs_num=1,d_epochs_num=1,sampled_temperature=20,gan_k=5):
         self.embedding_dim = embedding_dim
         self.max_sequence_length = max_sequence_length
         self.filter_sizes = filter_sizes
@@ -22,6 +22,10 @@ class Params(object):
         self.pools_size = pools_size
         self.checkpoint_every=checkpoint_every
         self.sampled_size=sampled_size
+        self.g_epochs_num=g_epochs_num
+        self.d_epochs_num=d_epochs_num
+        self.sampled_temperature=sampled_temperature
+        self.gan_k=gan_k
 
 
     def parse_config(self, config_file_path):
@@ -64,9 +68,17 @@ class Params(object):
             self.pools_size = int(config_common['pools_size'])
         if 'checkpoint_every' in config_common:
             self.checkpoint_every =int( config_common['checkpoint_every'])
+        if 'g_epochs_num' in config_common:
+            self.g_epochs_num =int( config_common['g_epochs_num'])
+        if 'd_epochs_num' in config_common:
+            self.d_epochs_num =int( config_common['d_epochs_num'])
         if 'sampled_size' in config_common:
             self.sampled_size =int( config_common['sampled_size'])
-            
+        if 'sampled_temperature' in config_common:
+            self.sampled_temperature =int( config_common['sampled_temperature'])
+        if 'gan_k' in config_common:
+            self.gan_k =int( config_common['gan_k'])
+
 
 
     def export_to_config(self, config_file_path):
@@ -86,6 +98,10 @@ class Params(object):
         config_common['pools_size'] = str(self.pools_size)
         config_common['checkpoint_every'] = str(self.checkpoint_every)
         config_common['sampled_size'] = str(self.sampled_size)
+        config_common['g_epochs_num'] = str(self.g_epochs_num)
+        config_common['d_epochs_num'] = str(self.d_epochs_num)
+        config_common['sampled_temperature'] = str(self.sampled_temperature)
+        config_common['gan_k'] = str(self.gan_k)
 
         with open(config_file_path, 'w') as configfile:
             config.write(configfile)

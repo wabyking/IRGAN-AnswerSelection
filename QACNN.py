@@ -115,6 +115,16 @@ class QACNN():
                 }
         scores = sess.run( self.score12, feed_dict)
         return scores
+    def neg_over_pos_score(self,batch,sess,verbose=True,score="predict"):
+
+        feed_dict = {
+                self.input_x_1: batch[:,0],
+                self.input_x_2: batch[:,1],
+                self.input_x_3: batch[:,2],
+                self.dropout_keep_prob_holder:1.0
+                }
+        scores = sess.run( self.score13-self.score12, feed_dict)
+        return scores
         
 
     
