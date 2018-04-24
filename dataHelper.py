@@ -157,7 +157,7 @@ class InsuranceQA(object):
             neg_alist_index=[i for i in range(len(self.answers))] 
             neg_alist_index.remove(int(row["answer_index"]))                 #remove the positive index
             sampled_index=np.random.choice(neg_alist_index,size=[self.opt.pools_size],replace= False)
-        		pools=np.array(answers)[sampled_index]
+            pools=np.array(self.answers)[sampled_index]
             subsamples=[]
             for neg in pools:
                 subsamples.append([self.encode(item) for item in [q,neg]])
@@ -167,12 +167,10 @@ class InsuranceQA(object):
                 predicted=model.predict(batch,sess)
                 predicteds.extend(predicted)        
             exp_rating = np.exp(np.array(predicteds)*sampled_temperature)
-        		prob = exp_rating / np.sum(exp_rating)
+            prob = exp_rating / np.sum(exp_rating)
             neg_samples = np.random.choice(pools, size= negative_size,p=prob,replace=False) 
-            for neg in neg_samples:
-                samples.ppend([encode_sent(vocab,item, FLAGS.max_sequence_length) for item in [q,a,neg]])
-            
-            samples.append([self.encode(item) for item in [q,a,pools[index]]])
+            for neg in neg_samples:            
+                samples.append([self.encode(item) for item in [q,a,neg]])
         return samples
             
         
@@ -203,11 +201,23 @@ class InsuranceQA(object):
             samples = [(self.encode(question) , self.encode( self.answers[anaser_index] )) for anaser_index in data]
             scores =[]
             for batch in BucketIterator(samples,batch_size=self.opt.batch_size,shuffle=False) :
-                scores.extend(model.predict(batch,sess))            
-            if max(scores) > max(scores[:len(good)]):
-                return 0
-            else:
+                scores.extend(model.predict(batch,sess))  
+                
+            max_indexs=[]    
+            max_score=max(scores)
+            for index,s in enumerate(scores):
+                if s==max_score:
+                    max_indexs.append(index)
+    
+            index=  random.choice(max_indexs)
+            if index==0:
                 return 1
+            else:
+                return 0
+#            if max(scores) > max(scores[:len(good)]):
+#                return 0
+#            else:
+#                return 1
             
         return testData.apply(evaluate_aplly,axis=1).mean()
 

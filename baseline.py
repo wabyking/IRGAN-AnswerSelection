@@ -45,7 +45,7 @@ def main():
                     samples=dataset.generate_uniform_pair() #generate_dns_pair(sess,discriminator) #generate_uniform() # generate_uniform_pair() #                     
                     for j in range(1):
                         for batch in samples:    # try:
-                            model.train_step(batch,sess,model)
+                            model.train_step(batch,sess)
                     percision,step = dataset.evaluate(sess,model)
                     line = "%d percision @1 : %.4f"%(step,percision)
                     print(line)
