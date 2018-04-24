@@ -24,4 +24,4 @@ def aplly_test(group):
 ansers_index = train.apply(aplly_test,axis=1)
 train["answer_index"]=ansers_index
 
-train.to_csv("data/answers.csv",index=False,sep="\t",header=None,encoding="utf-8")
+train.to_csv("data/train.csv",index=False,sep="\t",header=None,encoding="utf-8")

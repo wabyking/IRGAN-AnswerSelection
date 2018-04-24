@@ -64,11 +64,11 @@ if __name__ == '__main__':
         for g_epoch in range(opts.g_epochs_num):     
             
             
-            for i,row in dataset.train.iterrows():
+            for index,row in dataset.train.iterrows():
                 q=row["question"]
                 a=row["answer"]
-                if i %100==0:
-                    print( "have sampled %d pairs" % i) 
+                if index %100==0:
+                    print( "have sampled %d pairs" %index) 
                 
                 
                 
@@ -99,15 +99,15 @@ if __name__ == '__main__':
                 # fetch reward from D
                 subsamples=[]
                 for neg in neg_index:
-                    subsamples.append([dataset.encode(item) for item in [q,a,pool[neg]]])
+                    subsamples.append([dataset.encode(item) for item in [q,a,pools[neg]]])
                 rewards=[]
                 for batch in BucketIterator(subsamples,batch_size=opts.batch_size): 
-                    reward=discriminator.reward(batch,sess2)
+                    reward=discriminator.getReward(batch,sess2)
                     rewards.extend(reward)
                 
                 # feed back to G  
 
-                step,current_loss,positive,negative = generator.feedback(samples,sess,neg_index,rewards)                                                                                                   #self.gan_loss = -tf.reduce_mean(tf.log(self.prob) * self.reward) 
+                step,current_loss,positive,negative = generator.feedback(np.array(samples),sess1,neg_index,rewards)                                                                                                   #self.gan_loss = -tf.reduce_mean(tf.log(self.prob) * self.reward) 
     
                 line=("%s: GEN step %d, loss %f  positive %f negative %f"%(datetime.datetime.now().isoformat(), step, current_loss,positive,negative))
                 if _index %100==0:

@@ -16,7 +16,7 @@ with open("data/answers.txt","w") as f:
     for ans in answers:
         f.write(" ".join([ str(num) for num in answers[ans]]) + "\n")
         
-with open("data/raw_answers.txt","w") as f:
+with open("data/answers.txt","w") as f:
     for ans in answers:
         f.write(" ".join([ vocabulary[num] for num in answers[ans]]) + "\n")       
 with open("data/vocabulary.txt","w") as f:

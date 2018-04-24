@@ -81,7 +81,10 @@ class BucketIterator(object):
         batch_nums = int(len(self.data)/self.batch_size)
         for  i in range(batch_nums):
             yield self.transform(self.data[i*self.batch_size:(i+1)*self.batch_size])
-        yield self.transform(self.data[-1*self.batch_size:])
+        
+#        yield self.transform(self.data[-1*self.batch_size:])
+        if len(self.data)%self.batch_size != 0:
+            yield self.transform(self.data[(batch_nums)*self.batch_size:])
         
  
 
@@ -105,9 +108,9 @@ class InsuranceQA(object):
         return alphabet
                     
     def loadData(self):
-        answers = pd.read_csv("data/raw_answers.txt",sep="\t",names=["answer"])["answer"]  
+        answers = pd.read_csv("data/answers.txt",sep="\t",names=["answer"])["answer"]  
         validate = pd.read_csv("data/validate.txt",sep="\t",names=["split","question","good","bad"]) 
-        train = pd.read_csv("data/train.txt",sep="\t",names=["question","answer","answer_index"])
+        train = pd.read_csv("data/train.csv",sep="\t",names=["question","answer","answer_index"])
         dev =   validate[validate.split ==0 ] [["question","good","bad"]]
         test1 =   validate[validate.split ==1 ] [["question","good","bad"]] 
         test2 =   validate[validate.split ==2 ] [["question","good","bad"]] 
@@ -147,7 +150,7 @@ class InsuranceQA(object):
         return BucketIterator(samples,batch_size=self.opt.batch_size)
     
     @log_time_delta
-    def generate_gan(self,sess, model,loss_type="pair",negative_size=3,sampled_temperature=20):
+    def generate_gan(self,sess, model,loss_type="pair",negative_size=3,):
         samples=[]
         for i,row in self.train.iterrows():
             q=row["question"]
@@ -166,7 +169,7 @@ class InsuranceQA(object):
             for batch in BucketIterator(subsamples,batch_size=self.opt.batch_size):                            
                 predicted=model.predict(batch,sess)
                 predicteds.extend(predicted)        
-            exp_rating = np.exp(np.array(predicteds)*sampled_temperature)
+            exp_rating = np.exp(np.array(predicteds)*self.opt.sampled_temperature)
             prob = exp_rating / np.sum(exp_rating)
             neg_samples = np.random.choice(pools, size= negative_size,p=prob,replace=False) 
             for neg in neg_samples:            

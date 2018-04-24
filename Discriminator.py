@@ -40,7 +40,7 @@ class Discriminator(QACNN):
                 self.input_x_1: batch[:,0],
                 self.input_x_2: batch[:,1],
                 self.input_x_3: batch[:,2],
-                self.dropout_keep_prob_holder:1.0
+                self.dropout_keep_prob_holder:self.opt.dropout_keep_prob
                 }
         _, step,    current_loss,accuracy = sess.run(
                 [self.train_op, self.global_step, self.loss,self.accuracy],
@@ -51,7 +51,7 @@ class Discriminator(QACNN):
             if random.randint(0,10) <1:
                 print(("%s: DIS step %d, loss %f with acc %f "%(time_str, step, current_loss,accuracy)))
     
-    def reward(self,batch,sess,verbose=True):
+    def getReward(self,batch,sess,verbose=True):
         feed_dict = {
                 self.input_x_1: batch[:,0],
                 self.input_x_2: batch[:,1],
